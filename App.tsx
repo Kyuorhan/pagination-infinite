@@ -1,60 +1,79 @@
-import { useEffect } from "react";
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
-import { useFonts } from "expo-font";
+import { useEffect, useState } from "react";
 import * as SplashScreen from "expo-splash-screen";
-import { StatusBar } from "expo-status-bar";
-// import {
-//   useFonts as userFontPoppins,
-//   Poppins_700Bold,
-//   Poppins_600SemiBold,
-//   Poppins_500Medium,
-//   Poppins_400Regular,
-// } from "@expo-google-fonts/poppins";
-// import {
-//   useFonts as userFontsInter,
-//   Inter_700Bold,
-//   Inter_600SemiBold,
-//   Inter_500Medium,
-//   Inter_400Regular,
-// } from "@expo-google-fonts/inter";
+import * as Font from "expo-font";
+import { NavigationContainer } from "@react-navigation/native";
+
+import {
+  AccessibilityInfo,
+  Alert,
+  Linking,
+  LogBox,
+  Platform,
+} from "react-native";
+import { fontFamily } from "@/theme";
+import Routes from "@/routes";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
-  const [loaded, error] = useFonts({
-    Inter_700Bold: require("@expo-google-fonts/inter/Inter-Bold.ttf"),
-    Inter_600SemiBold: require("@expo-google-fonts/inter/Inter-SemiBold.ttf"),
-    Inter_500Medium: require("@expo-google-fonts/inter/Inter-Medium.ttf"),
-    Inter_400Regular: require("@expo-google-fonts/inter/Inter-Regular.ttf"),
-    Poppins_700Bold: require("@expo-google-fonts/poppins/Poppins-Bold.ttf"),
-    Poppins_600SemiBold: require("@expo-google-fonts/poppins/Poppins-SemiBold.ttf"),
-    Poppins_500Medium: require("@expo-google-fonts/poppins/Poppins-Medium.ttf"),
-    Poppins_400Regular: require("@expo-google-fonts/poppins/Poppins-Regular.ttf"),
-  });
+  const [fontsLoaded] = Font.useFonts(fontFamily);
+  const [loaded, setLoaded] = useState(false);
+
+  async function infoReady() {
+    // Ignorar a mensagem de configuração de movimento reduzido
+    LogBox.ignoreLogs([
+      "[Reanimated] Reduced motion setting is enabled on this device.",
+    ]);
+
+    try {
+      const isReduceMotionEnabled =
+        await AccessibilityInfo.isReduceMotionEnabled();
+      if (isReduceMotionEnabled) {
+        Alert.alert(
+          "Ajustes de Acessibilidade",
+          Platform.OS === "ios"
+            ? "Para uma melhor experiência, acesse na configuração de acessibilidade e desative a opção de movimento reduzido."
+            : "Para uma melhor experiência, acesse na configuração de acessibilidade e desative a opção de remover animação.",
+          [
+            {
+              text: "Cancelar",
+              style: "cancel",
+            },
+            {
+              text: "Abrir Configurações",
+              onPress: () => {
+                if (Platform.OS === "ios") {
+                  Linking.openURL("App-Prefs:root=General&path=ACCESSIBILITY");
+                } else if (Platform.OS === "android") {
+                  Linking.sendIntent("android.settings.ACCESSIBILITY_SETTINGS"); //  abre a tela de configurações do dispositivo
+                  // Linking.openSettings(); //  abre a tela de informações do aplicativo,
+                }
+              },
+            },
+          ]
+        );
+      }
+
+      if (fontsLoaded) {
+        setLoaded(true);
+        SplashScreen.hideAsync();
+      }
+    } catch (error) {
+      console.warn(error);
+    }
+  }
 
   useEffect(() => {
-    if (loaded || error) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded, error]);
+    infoReady();
+  }, [fontsLoaded]);
 
-  if (!loaded && !error) {
+  if (!loaded) {
     return null;
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </SafeAreaView>
+    <NavigationContainer>
+      <Routes />
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
