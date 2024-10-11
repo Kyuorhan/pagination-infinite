@@ -1,11 +1,18 @@
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, SafeAreaView, StatusBar } from "react-native";
 import styles from "./styles";
-import theme from "@/theme";
+import { colors } from "@/theme";
 
 export function Loading() {
   return (
-    <View style={styles.container}>
-      <ActivityIndicator size={50} color={theme.colors.brand.blue} />
-    </View>
+    <SafeAreaView style={styles.container}>
+      <StatusBar
+        animated={true}
+        backgroundColor={"transparent"}
+        barStyle={"default"}
+        translucent={true}
+      />
+
+      <ActivityIndicator size={50} color={colors.brand.purple} />
+    </SafeAreaView>
   );
 }

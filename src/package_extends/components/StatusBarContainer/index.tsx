@@ -1,14 +1,18 @@
 import {
   Dimensions,
+  StatusBar,
+  StyleProp,
   StyleSheet,
   Text,
+  TextStyle,
   TouchableOpacity,
   View,
   ViewProps,
 } from "react-native";
+import Constants from "expo-constants";
 import { NavigationProp, ParamListBase } from "@react-navigation/native";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import theme from "@/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { colors, fontSize } from "@/theme";
 
 const { height, width } = Dimensions.get("window");
 
@@ -16,6 +20,7 @@ interface StatusBarContainerProps extends ViewProps {
   namedTitle?: string;
   isDisableBTN?: boolean;
   navigation: NavigationProp<ParamListBase>;
+  textStyle?: StyleProp<TextStyle>;
   onPress?: () => void;
 }
 
@@ -25,30 +30,41 @@ export function StatusBarContainer({
   navigation,
   children,
   style,
+  textStyle,
   onPress,
 }: StatusBarContainerProps) {
-  const flattenedStyle = StyleSheet.flatten([styles.container, style]);
+  const flattenedStyle = StyleSheet.flatten([
+    styles.container,
+    style,
+    { paddingTop: Constants.statusBarHeight },
+  ]);
 
   const handlePress = () => {
     onPress ? onPress() : navigation && navigation.goBack();
   };
 
   function getDynamicTextStyle(text: string) {
-    return text.length <= 20 ? styles.title : styles.limitTitle;
+    return [text.length <= 20 ? styles.title : styles.limitTitle, textStyle];
   }
 
   return (
     <View style={flattenedStyle}>
+      <StatusBar
+        animated={true}
+        backgroundColor={"transparent"}
+        barStyle={"default"}
+        translucent={true}
+      />
       <View style={[styles.button, { paddingRight: "3.5%" }]}>
         {isDisableBTN || (
           <TouchableOpacity style={styles.btnLeft} onPress={handlePress}>
             <MaterialIcons
-              size={styles.arrowLeft.height}
-              color={styles.arrowLeft.color}
+              name="arrow-back-ios-new"
+              size={fontSize.xl4}
+              color={colors.base.gray200}
             />
           </TouchableOpacity>
         )}
-        {/* {isDisableBTN || <ArrowLeftBlue onPress={handlePress} />} */}
       </View>
       <View style={styles.textContainer}>
         <View style={styles.textContainer}>
@@ -68,13 +84,12 @@ export function StatusBarContainer({
 
 export const styles = StyleSheet.create({
   container: {
+    height: "15%",
     width: "100%",
-    height: height * 0.085,
-    marginTop: height * 0.015,
-    marginBottom: height * 0.0075,
+    backgroundColor: colors.base.gray500,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: width * 0.0285,
+    paddingHorizontal: width * 0.0325,
   },
   button: {
     height: "100%",
@@ -87,10 +102,6 @@ export const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-  },
-  arrowLeft: {
-    height: height * 0.0285,
-    color: theme.colors.base.gray400,
   },
   btnRight: {
     flex: 1,
@@ -105,15 +116,15 @@ export const styles = StyleSheet.create({
   title: {
     textAlign: "center",
     textAlignVertical: "center",
-    fontFamily: "Sans-Bold",
-    fontSize: height * 0.025,
-    color: theme.colors.base.gray400,
+    fontFamily: "Poppins_600SemiBold",
+    fontSize: fontSize.xl3,
+    color: colors.base.gray400,
   },
   limitTitle: {
     textAlign: "center",
     textAlignVertical: "center",
-    fontFamily: "Sans-Bold",
-    fontSize: height * 0.021,
-    color: theme.colors.base.gray400,
+    fontFamily: "Poppins_700Bold",
+    fontSize: fontSize.xl2_1,
+    color: colors.base.gray400,
   },
 });
